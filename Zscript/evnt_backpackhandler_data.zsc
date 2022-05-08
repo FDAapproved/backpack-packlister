@@ -154,7 +154,8 @@ extend class BackpackHandler
 		}
 		
 		
-		
+		// Resets rules flag. 
+		bbb.ruleschanged = false;
 		
 		// Inits the actual valid-items array.
 		// Done once per container class, since each container has it's own storage

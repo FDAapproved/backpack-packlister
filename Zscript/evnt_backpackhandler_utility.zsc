@@ -84,5 +84,17 @@ extend class BackpackHandler
 
 		return bbb;
 	}
+	
+	// Toggles refreshing of rule(s). 
+	void rules_changed(BackpackCacher bbb = null)
+	{
+		if(bbb)
+			bbb.ruleschanged = true;
+		else
+		{
+			for(int i = 0; i < BackpackTypesSize; i++)
+				BackpackTypes[i].ruleschanged = true;
+		}
+	}
 
 }

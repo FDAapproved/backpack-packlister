@@ -23,6 +23,7 @@ extend class BackpackHandler
 			WhiteList.push(classname);
 			WhiteListsize++;
 			if(pl_debug > 1)console.printf("[PL][Handler] Whitelist now contains: '"..classname.."'.");
+			rules_changed();
 		}
 	}
 	
@@ -49,6 +50,7 @@ extend class BackpackHandler
 			bbb.whitelist.push(candidate);
 			bbb.whitelistsize += 1;
 			if(pl_debug > 1)console.printf("[PL][Handler] Whitelist now contains: '"..candidate.."'.");
+			rules_changed(bbb);
 		}
 		return;
 	}

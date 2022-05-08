@@ -5,19 +5,31 @@ extend class BackpackHandler
 	
 	void service_allowweapons(bool amount)
 	{
-		if(!(disallowweapons))disallowweapons = !amount;
+		if(!(disallowweapons))
+		{
+			disallowweapons = !amount;
+			rules_changed();
+		}
 	}
 
 	void service_container_allowweapons(string classname, bool amount)
 	{
 		BackpackCacher bbb;
 		bbb = get_cache_pointer(classname);
-		if(!(bbb.disallowweapons))bbb.disallowweapons = !amount;
+		if(!(bbb.disallowweapons))
+		{
+			bbb.disallowweapons = !amount;
+			rules_changed(bbb);
+		}
 	}
 	
 	void service_allowammos(bool amount)
 	{
-		if(!(disallowammos))disallowammos = !amount;
+		if(!(disallowammos))
+		{
+			disallowammos = !amount;
+			rules_changed();
+		}
 	}
 
 	void service_container_allowammos(string classname, bool amount)
@@ -29,39 +41,63 @@ extend class BackpackHandler
 	
 	void service_allowpickups(bool amount)
 	{
-		if(!(disallowpickups))disallowpickups = !amount;
+		if(!(disallowpickups))
+		{
+			disallowpickups = !amount;
+			rules_changed();
+		}
 	}
 
 	void service_container_allowpickups(string classname, bool amount)
 	{
 		BackpackCacher bbb;
 		bbb = get_cache_pointer(classname);
-		if(!(bbb.disallowpickups))bbb.disallowpickups = !amount;
+		if(!(bbb.disallowpickups))
+		{
+			bbb.disallowpickups = !amount;
+			rules_changed(bbb);
+		}
 	}
 	
 	
 	
 	void service_allowmags(bool amount)
 	{
-		if(!(disallowmags))disallowmags = !amount;
+		if(!(disallowmags))
+		{
+			disallowmags = !amount;
+			rules_changed();
+		}
 	}
 
 	void service_container_allowmags(string classname, bool amount)
 	{
 		BackpackCacher bbb;
 		bbb = get_cache_pointer(classname);
-		if(!(bbb.disallowmags))bbb.disallowmags = !amount;
+		if(!(bbb.disallowmags))
+		{
+			bbb.disallowmags = !amount;
+			rules_changed(bbb);
+		}
 	}
 	
 	void service_allowarmors(bool amount)
 	{
-		if(!(disallowarmors))disallowarmors = !amount;
+		if(!(disallowarmors))
+		{
+			disallowarmors = !amount;
+			rules_changed();
+		}
 	}
 
 	void service_container_allowarmors(string classname, bool amount)
 	{
 		BackpackCacher bbb;
 		bbb = get_cache_pointer(classname);
-		if(!(bbb.disallowarmors))bbb.disallowarmors = !amount;
+		if(!(bbb.disallowarmors))
+		{
+			bbb.disallowarmors = !amount;
+			rules_changed(bbb);
+		}
 	}
 }
