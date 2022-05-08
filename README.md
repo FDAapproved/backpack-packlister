@@ -92,3 +92,6 @@ GameInfo
 Once located, "BackpackHandlerService"-'s function GetInt() should be called with a single string parameter. This parameter is treated as a chunk of a PLINFO lump, with the following differences:
 - Single and Multiline Comments are not allowed to be sent directly to the service class. The reasoning behind this is single and multiline comments already are able to be implemented in .ZSC files, without a need to send the service class garbage information.  
 This method is called 'dynamic' since due to being sent via a functioncall, commands can be dynamically generated and situationally sent (IE, tweaked/enabled/disabled alongside CVARS).
+
+# Debugging
+Packlister supports multiple debugging codes (similar to that of Hideous Destructor). When diagnosing an issue related to packlister, increment pl_debug by 1 until the information you are looking for is visible on mapload via the console. 
