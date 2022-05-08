@@ -18,13 +18,15 @@ Packlister command calls are written in the following format:
 //<E>
 /*<F>*/
 ```
-- A is a command's modifiers. Packlister supports the following command modifiers: "container",
-- B is a command's name. Packlister supports the following command names: "whitelist, blacklist, minbulk, maxbulk, allowweapons, allowmags, allowammos, allowpickups, allowarmors",
+- A is a command's modifiers. (before ".") Packlister supports the following command modifiers: "container",
+- B is a command's name. (before ":") Packlister supports the following command names: "whitelist, blacklist, minbulk, maxbulk, allowweapons, allowmags, allowammos, allowpickups, allowarmors",
 - C is a command's first parameter. When using the modifier "container", <C> must be the name of the container you want to apply rules to,
 - D is a command's second parameter. When using the modifier "container", <D> is the first parameter of the command you wish to invoke (IE, the first item to whitelist for whitelist, the bulkvalue for min/maxbulk).
 - E is a single line comment. Comments are only supported for PLINFO lumps.
 - F is a multiline comment. Comments are only supported for PLINFO lumps. 
 - N is a command's Nth parameter. Packlister API commands can be given an arbitrary number of parameters, allowing for the whitelisting/blacklisting of multiple classes at once.
+- Multiple parameters are seperated by , and can be interupted by comments, newlines, or other characters,
+- When sending multiple commands via a single string, ; is used to denote the end of one command call and the start of another (see above).
 
 # Implementation
 Packlister can be implemented staticallu, dynamically or via a mix of the two. 
