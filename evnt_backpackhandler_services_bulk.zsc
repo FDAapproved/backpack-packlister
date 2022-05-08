@@ -1,0 +1,36 @@
+extend class BackpackHandler
+{
+
+	// sets the current maxbulk for all backpackable wild items.
+	void service_maxbulk(int amount)
+	{
+		bulkmax = amount;
+		hasmaxbulk = true;
+	}
+
+	// sets the current maxbulk a class's backpackable wild items.
+	void service_container_maxbulk(string classname, int amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		bbb.bulkmax = amount;
+		bbb.hasmaxbulk = true;
+	}
+	
+	
+	// sets the current minbulk for all backpackable wild items.	
+	void service_minbulk(int amount)
+	{
+		bulkmin = amount;
+		hasminbulk = true;
+	}
+	
+	// sets the current minbulk a class's backpackable wild items.
+	void service_container_minbulk(string classname, int amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		bbb.bulkmin = amount;
+		bbb.hasminbulk = true;
+	}
+}

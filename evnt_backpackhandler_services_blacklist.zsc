@@ -1,0 +1,56 @@
+extend class BackpackHandler
+{
+	
+	// Appends a value to the global blacklist.
+	void service_blacklist(string classname)
+	{
+		
+		if(pl_debug > 1)console.printf("[PL][Handler] Checking for addition: "..classname);
+		bool shouldadd = true;
+
+		for(int k=0;k<blacklistsize; k++)
+		{
+
+			if(BlackList[k] == classname)
+			{
+				if(pl_debug > 1)console.printf("[PL][Handler][ERROR] already listing '"..classname.."'.");
+				shouldadd = false;
+				k = blacklistsize;
+			}
+		}
+		
+		if(shouldadd)
+		{
+			blacklist.push(classname);
+			blacklistsize += 1;
+			if(pl_debug)console.printf("[PL][Handler] Blacklist now contains: '"..classname.."'.");
+		}
+	}
+
+
+	// Appends a value to a container's blacklist.
+	void service_container_blacklist(string classname, string candidate)
+	{		
+		BackpackCacher bbb;
+		bool shouldadd = true;
+		bbb = get_cache_pointer(classname);
+		if(pl_debug > 1)console.printf("[PL][Handler] Checking for addition: "..candidate);
+		for(int k=0;k<bbb.blacklistsize; k++)
+		{
+			if(bbb.BlackList[k] == candidate)
+			{
+				if(pl_debug > 1)console.printf("[PL][Handler][ERROR] already listing '"..candidate.."'.");
+				shouldadd = false;
+				k = bbb.blacklistsize;
+			}
+		}
+		
+		if(shouldadd)
+		{
+			bbb.blacklist.push(candidate);
+			bbb.blacklistsize += 1;
+			if(pl_debug > 1)console.printf("[PL][Handler] Blacklist now contains: '"..candidate.."'.");
+		}
+		return;
+	}
+}

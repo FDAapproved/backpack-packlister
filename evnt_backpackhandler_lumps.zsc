@@ -1,0 +1,105 @@
+//------------------------------------------------------------------------------
+// Lushious Lumps... 
+// Code taken from Ace/Caligari/whoever had written it before it's inclusion
+// in UAS. 
+//------------------------------------------------------------------------------
+// Comments are only supported for PLINFO files. This is because 
+// you can simply add normal ZS comments to implementations in .zs files. 
+extend class BackpackHandler
+{
+	array<string> PLINFOLump;
+	int lumplinessize;
+	void ReadPLINFO()
+	{
+			Array<string> LumpLines;
+			string RawLumpText;
+			string Line;
+			int LumpNum;
+
+			
+			int linecomment;
+			int linemulticomment;
+			bool multiwait;
+			
+			while((LumpNum = Wads.FindLump("PLINFO", LumpNum + 1, Wads.GlobalNamespace)) >= 0)
+			{
+		
+				LumpLines.Clear();
+				RawLumpText = Wads.ReadLump(LumpNum);
+				RawLumpText.Split(LumpLines, "\n", TOK_KEEPEMPTY);
+				lumplinessize = LumpLines.Size();
+				for (int i = 0; i < LumpLines.Size(); i++) {
+
+					Line = LumpLines[i];
+					
+
+					if(multiwait)
+					{
+						linemulticomment = line.indexof("*/");
+					
+						if((linemulticomment != -1))
+						{
+							multiwait = false;
+							line.remove(0, linemulticomment+2);
+						}
+					}
+					
+					if(!multiwait)
+					{
+						// Removes single line comments. 
+						int linecomment = line.indexof("//");
+						if(linecomment != -1)
+						{
+							line.remove(linecomment, line.length()-linecomment);
+						}
+						// Remove newline and return characters
+						line.Replace("\r", "");
+						line.Replace("\n", "");
+						line.Replace("\f", "");
+						line.replace(" ", "");
+						line.replace("	", "");
+						
+						
+						// Detects and ignores lumps within multiline comments.
+						linemulticomment = line.indexof("/*");
+						
+						if((linemulticomment != -1))
+						{
+							multiwait = true;
+							if(line.indexof("*/") != -1)
+							{
+								line.remove(linemulticomment, (line.indexof("*/")+2));
+								multiwait = false;
+							}
+							else
+							{
+								line.remove(linemulticomment, line.length()-linemulticomment);
+							}
+						}
+						
+						// Checks to see if the line exists,
+						// If not it is removed from lumplines.
+						if(Line.length() != 0)
+						{
+							LumpLines[i] = Line;
+							if(pl_debug)console.printf(line);
+						}
+						else
+						{
+							LumpLines.delete(i);
+							lumplinessize--;
+							i--;
+						}
+					}
+					else
+					{
+						LumpLines.delete(i);
+						lumplinessize--;
+						i--;
+					}
+
+				}
+				PLINFOLump.Append(LumpLines);
+			}
+		}
+}

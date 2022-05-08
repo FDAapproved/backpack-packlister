@@ -1,0 +1,28 @@
+version "4.6"
+
+// Service class.
+#include "zscript/hndl_backpackhandlerservice.zsc"
+
+// Handler main functions.
+#include "zscript/evnt_backpackhandler.zsc"
+
+// Handler utility functions.
+#include "zscript/evnt_backpackhandler_utility.zsc"
+#include "zscript/evnt_backpackhandler_destroyitem.zsc"
+
+// Handler vars and data-init functions.
+#include "zscript/evnt_backpackhandler_data.zsc"
+
+// Handler lump-reader. (Sends to service).
+#include "zscript/evnt_backpackhandler_lumps.zsc"
+
+// Handler service switch. (Reacts to service pings). 
+#include "zscript/evnt_backpackhandler_services.zsc"
+
+// Handler service functions.
+#include "zscript/evnt_backpackhandler_services_blacklist.zsc"
+#include "zscript/evnt_backpackhandler_services_whitelist.zsc"
+#include "zscript/evnt_backpackhandler_services_types.zsc"
+#include "zscript/evnt_backpackhandler_services_bulk.zsc"
+#include "zscript/evnt_backpackhandler_services_rules.zsc"
+#include "zscript/evnt_backpackhandler_services_dumpcache.zsc"

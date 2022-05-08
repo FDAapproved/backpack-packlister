@@ -1,0 +1,67 @@
+extend class BackpackHandler
+{
+	// Set global and local item-type blacklists. 
+	
+	
+	void service_allowweapons(bool amount)
+	{
+		if(!(disallowweapons))disallowweapons = !amount;
+	}
+
+	void service_container_allowweapons(string classname, bool amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		if(!(bbb.disallowweapons))bbb.disallowweapons = !amount;
+	}
+	
+	void service_allowammos(bool amount)
+	{
+		if(!(disallowammos))disallowammos = !amount;
+	}
+
+	void service_container_allowammos(string classname, bool amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		if(!(bbb.disallowammos))bbb.disallowammos = !amount;
+	}
+	
+	void service_allowpickups(bool amount)
+	{
+		if(!(disallowpickups))disallowpickups = !amount;
+	}
+
+	void service_container_allowpickups(string classname, bool amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		if(!(bbb.disallowpickups))bbb.disallowpickups = !amount;
+	}
+	
+	
+	
+	void service_allowmags(bool amount)
+	{
+		if(!(disallowmags))disallowmags = !amount;
+	}
+
+	void service_container_allowmags(string classname, bool amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		if(!(bbb.disallowmags))bbb.disallowmags = !amount;
+	}
+	
+	void service_allowarmors(bool amount)
+	{
+		if(!(disallowarmors))disallowarmors = !amount;
+	}
+
+	void service_container_allowarmors(string classname, bool amount)
+	{
+		BackpackCacher bbb;
+		bbb = get_cache_pointer(classname);
+		if(!(bbb.disallowarmors))bbb.disallowarmors = !amount;
+	}
+}

@@ -1,0 +1,210 @@
+extend class BackpackHandler
+{
+	// Checks against the index's validitems array instead
+	// of the entire rules set. Dubiously faster (depends on container).
+	int checkrulesfaster(class<Inventory> itemtocheck, int index=-1)
+	{
+		if(index == -1)
+			return -1;
+			
+		// It's only faster to check here sometimes.
+		// If not, return the regular function. 
+		if(BackpackTypes[index].validitemsactualsize > 50)
+			return int(checkrules(itemtocheck, null, true, index));
+			
+		// Name used by the inventory checker. 
+		string nametocheck = itemtocheck.getclassname();
+		nametocheck = nametocheck.makelower();
+		
+		for(int i = 0; i < BackpackTypes[index].validitemsactualsize; i++)
+		{
+			if(nametocheck == BackpackTypes[index].validitemsactual[i])
+			{
+				return 0;
+			}
+		}
+		return 1;
+	}
+
+	// really bool, but GZDoom throws a fit if this is a boolean function. 
+	int checkrules(class<Inventory> itemtocheck, Inventory altitemtocheck=null, bool useindex=false, int index=-1)
+	{
+		// No null pointers.
+		if(!itemtocheck)return false;
+		
+		int i;
+		
+		// Boolean rules as shorthand. 
+		bool isWeapon     = bool(itemtocheck is (class<actor>)('HDWeapon'));
+		bool isAmmo       = bool((itemtocheck is (class<actor>)('HDAmmo')) || (itemtocheck is (class<actor>)('HDRoundAmmo')));
+		bool isMag        = (itemtocheck is (class<actor>)('HDMagAmmo'));
+		isAmmo = isAmmo && !isMag;
+		bool isArmor      = bool(itemtocheck is (class<actor>)('HDArmour'));
+		bool isPickup     = bool(itemtocheck is (class<actor>)('HDPickup'));
+		isPickup = isPickup && !isAmmo;
+		isPickup = isPickup && !isMag;
+		
+		
+		bool checkbulk = false;
+		bool checkingitem = useindex && (index != -1);
+		int bulktocheck = 0;
+		
+		// Name used by the inventory checker. 
+		string nametocheck = itemtocheck.getclassname();
+		nametocheck = nametocheck.makelower();
+		
+		
+
+		if(isWeapon)
+		{
+			if(altitemtocheck)
+				bulktocheck = HDWeapon(altitemtocheck).weaponbulk();
+			else
+				bulktocheck = (HDWeapon(getdefaultbytype((class<actor>)(itemtocheck))).weaponbulk());
+			checkbulk = true;
+		}
+		else if(isPickup || isAmmo || isMag)
+		{
+			if(altitemtocheck)
+				bulktocheck = HDPickup(altitemtocheck).bulk;
+			else
+				bulktocheck = (HDPickup(getdefaultbytype((class<actor>)(itemtocheck))).bulk);
+			checkbulk = true;
+		}
+		
+		
+		// Type casting readout. 
+		if(pl_debug > 2)console.printf(nametocheck.."\n isweapon: "..isweapon
+		.."\n isammo: "..isammo
+		.."\n ismag: "..ismag
+		.."\n isarmor: "..isarmor
+		.."\n ispickup: "..ispickup
+		.."\n bulk: "..bulktocheck);
+		
+
+		// Goes through the global whitelist. 
+		for(i=0; i<whitelistsize;i++)
+		{	
+			if(nametocheck == whitelist[i])
+				return false;
+		}
+
+
+
+		// Goes through the individual whitelist (if it exists).
+		if(checkingitem)
+		{
+			for(i=0; i<(BackpackTypes[index].whitelistsize); i++)
+			{
+				if(nametocheck == BackpackTypes[index].whitelist[i])
+				{
+					return false;
+				}
+			}
+		}
+
+
+
+		// Goes through the global blacklist. 
+		for(i=0; i<blacklistsize;i++)
+		{	
+			if(nametocheck == blacklist[i])
+				return true;
+		}
+		
+		
+
+		// Goes through the individual blacklist (if it exists).
+		if(checkingitem)
+		{
+			for(i=0; i<(BackpackTypes[index].blacklistsize); i++)
+			{
+				if(nametocheck == BackpackTypes[index].blacklist[i])
+				{
+					return true;
+				}
+			}
+		}
+		
+
+
+		if(ispickup && disallowpickups)
+		{
+			return true;
+		}
+		else if(isammo && disallowammos)
+		{
+			return true;
+		}		
+		else if(isweapon && disallowweapons)
+		{
+			return true;
+		}
+		else if(isarmor && disallowarmors)
+		{
+			return true;
+		}
+		else if(ismag && disallowmags)
+		{
+			return true;
+		}
+
+
+		// Checks for type denials. 
+		if(checkingitem)
+		{
+			if(ispickup && (BackpackTypes[index].disallowpickups))
+			{
+				return true;
+			}
+			else if(isammo	&& (BackpackTypes[index].disallowammos))
+			{
+				return true;
+			}		
+			else if(isweapon && (BackpackTypes[index].disallowweapons))
+			{
+				return true;
+			}
+			else if(isarmor && (BackpackTypes[index].disallowarmors))
+			{
+				return true;
+			}
+			else if(ismag && (BackpackTypes[index].disallowmags))
+			{
+				return true;
+			}
+		}
+
+
+		if(checkbulk)
+		{
+			// Checks for the actual bulk.
+			if((bulktocheck > bulkmax) && hasmaxbulk)
+			{
+				return true;
+			}
+			else if((bulktocheck < bulkmin) && hasminbulk)
+			{
+				return true;
+			}
+
+
+
+			// Bulk min and bulk max checks.
+			if(checkingitem)
+			{
+				// Checks for the actual bulk.
+				if((bulktocheck > (BackpackTypes[index].bulkmax)) && (BackpackTypes[index].hasmaxbulk))
+				{
+					return true;
+				}
+				else if((bulktocheck < (BackpackTypes[index].bulkmin)) && (BackpackTypes[index].hasminbulk))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+}

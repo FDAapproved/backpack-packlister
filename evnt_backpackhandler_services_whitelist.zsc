@@ -1,0 +1,55 @@
+extend class BackpackHandler
+{
+	// Appends a value to the global whitelist.
+	void service_whitelist(string classname)
+	{
+		
+		if(pl_debug > 1)console.printf("[PL][Handler] Checking for addition: "..classname);
+		bool shouldadd = true;
+
+		for(int k=0;k<whitelistsize; k++)
+		{
+
+			if(WhiteList[k] == classname)
+			{
+				if(pl_debug > 1)console.printf("[PL][Handler][ERROR] already listing '"..classname.."'.");
+				shouldadd = false;
+				k = whitelistsize;
+			}
+		}
+		
+		if(shouldadd)
+		{
+			WhiteList.push(classname);
+			WhiteListsize++;
+			if(pl_debug > 1)console.printf("[PL][Handler] Whitelist now contains: '"..classname.."'.");
+		}
+	}
+	
+	// Appends a value to a container's whitelist.
+	void service_container_whitelist(string classname, string candidate)
+	{		
+		BackpackCacher bbb;
+		bool shouldadd = true;
+		bbb = get_cache_pointer(classname);
+		if(pl_debug > 1)console.printf("[PL][Handler] Checking for addition: "..candidate);
+		for(int k=0;k<bbb.whitelistsize; k++)
+		{
+
+			if(bbb.WhiteList[k] == candidate)
+			{
+				if(pl_debug > 1)console.printf("[PL][Handler][ERROR] already listing '"..candidate.."'.");
+				shouldadd = false;
+				k = bbb.whitelistsize;
+			}
+		}
+		
+		if(shouldadd)
+		{
+			bbb.whitelist.push(candidate);
+			bbb.whitelistsize += 1;
+			if(pl_debug > 1)console.printf("[PL][Handler] Whitelist now contains: '"..candidate.."'.");
+		}
+		return;
+	}
+}

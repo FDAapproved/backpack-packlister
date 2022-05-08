@@ -1,0 +1,232 @@
+// Dataclass that holds set rules for containers,
+// also doubles as a validitems array that replacements pull from.
+// This class ensures repetetive operations for maps with many, many
+// backpacks are not repeated more than needed.
+class BackpackCacher play
+{
+	// Used for finding containers by classname.
+	string containername;
+	
+	// The valid items list pre-rules (made once). 
+	Array<class<Inventory> > ValidItems;
+	int validitemssize;
+
+	// The valid items list post-rules. 
+	Array<class<Inventory> > ValidItemsActual;
+	int validitemsactualsize;
+
+	
+	// Items to force-remove per container.
+	Array<string> BlackList;
+	int blacklistsize;
+	
+	// Items to force-allow per container.
+	Array<string> WhiteList;
+	int whitelistsize;
+	
+	// Maximum bulk allowed per item (-1 = none)
+	int bulkmax;
+	bool hasmaxbulk;
+
+
+	// Minimum bulk allowed per item (-1 = none)
+	int bulkmin;
+	bool hasminbulk;
+	
+	
+	// All false by default.
+	bool disallowweapons;
+	bool disallowammos;
+	bool disallowpickups;
+	bool disallowmags;
+	bool disallowarmors;
+	
+	// Tamper boolean for updating validitemsactual.
+	// changed by any container specific toggles,
+	// also changed when global whitelist and blacklist are altered. 
+	bool ruleschanged;
+	
+	bool hashadvaliditems;
+}
+
+
+
+extend class BackpackHandler
+{
+	// Holds all backpacks spawned for processing after the first tick.
+	Array<Actor> SpawnedBackpacks;
+	int spawnedbackpackssize;
+
+	// Holds the actual items blacklist for use when generating tables. 
+	Array<string> BlackList;
+	int blacklistsize;
+
+	// Holds the actual items blacklist for use when generating tables. 
+	Array<string> WhiteList;
+	int whitelistsize;
+	
+	// Holds all backpack types that have been found by the handler,
+	// this is done for the edgecase of '1012352123 backpacks' in a map,
+	// or something else stupid like that. 
+	Array<BackpackCacher> BackpackTypes;
+	int backpacktypessize;
+	
+	
+	int bulkmax;
+	bool hasmaxbulk;
+	
+	int bulkmin;
+	bool hasminbulk;
+	
+	// All false by default.
+	bool disallowweapons;
+	bool disallowammos;
+	bool disallowpickups;
+	bool disallowmags;
+	bool disallowarmors;
+	
+	
+	bool initalized;
+	bool hasticked;
+	bool haspinged;
+	bool gotpingback;
+	BackpackCacher bbb;
+	// Datafunctions.
+	
+	// Makes a cached replacements array,
+	// also returns the index of whatever it makes/finds.
+	int initreplacementsarray(HDBackpack ptr)
+	{
+
+		// Give the calling function the right index
+		// if the class was found already. 
+		int i;
+		int returnvalue = 0;
+		string ptrname = ptr.getclassname();
+		
+		// Flags for the loops that check item storage rules below. 
+		bool willpush;
+		bool willinit;
+		
+		ptrname = ptrname.makelower();
+		for(int i = 0; i < backpacktypessize; i++)
+		{
+			if(pl_debug > 1)console.printf("Precache ValidItems Comparison "..i.."," ..ptrname.makelower().." == "..BackpackTypes[i].containername);
+			if(BackpackTypes[i].containername == ptrname)
+			{
+				if(pl_debug > 1)console.printf("Returning precached "..ptrname.." at index "..i..".");
+				returnvalue = i;
+				i = backpacktypessize;
+			}
+			else
+			{
+				returnvalue++;
+			}
+		}
+		
+
+		if((returnvalue<=backpacktypessize-1) &&  (BackpackTypes[returnvalue].hashadvaliditems) && !(BackpackTypes[returnvalue].ruleschanged))
+		{
+			return returnvalue;
+		}
+		// Init the list for arrays that do not have validitemslist. 
+		else if((returnvalue<=backpacktypessize-1) &&  !(BackpackTypes[returnvalue].hashadvaliditems))
+		{
+			bbb = BackpackTypes[returnvalue];
+			willpush = false;
+			willinit = true;
+		}
+		else if((returnvalue<=backpacktypessize-1))
+		{
+			bbb = BackpackTypes[returnvalue];
+			willinit = false;
+			willpush = false;
+		}
+		// Make an entirely new class otherwise. 
+		else
+		{
+			// Otherwise, make a new class and then populate it. 
+			bbb = BackpackCacher(new('BackpackCacher'));
+			bbb.containername = ptrname;
+			BackpackTypes.push(bbb);
+			backpacktypessize++;
+			willinit = true;
+		}
+		
+		
+		
+		
+		// Inits the actual valid-items array.
+		// Done once per container class, since each container has it's own storage
+		// rules.
+		if(willinit)
+		{
+			bbb.hashadvaliditems = true;
+			for (int i = 0; i < AllActorClasses.Size(); ++i)
+			{
+				// inits the inventory item to be compared. 
+				let invitem = (class<Inventory>)(AllActorClasses[i]);
+				
+				// If it doesn't exist, continue.
+				if(!invitem)continue;
+				
+				// Store copy of the classname. 
+				string invitemname = invitem.getclassname();
+				
+				// Look at the item's backpack flags. 
+				if(
+					(
+						(class<HDPickup>)(invitem)
+						&&getdefaultbytype((class<HDPickup>)(invitem)).bNoRandomBackpackSpawn
+					)
+					||(
+						(class<HDWeapon>)(invitem)
+						&&getdefaultbytype((class<HDWeapon>)(invitem)).bNoRandomBackpackSpawn
+					
+					)
+					)continue;
+				
+
+				// Checks the container's natural storage conditions.
+				if (ptr.Storage.CheckConditions(null, invitem) != IType_Invalid)
+				{
+					// The item is technically valid, add it to the list. 
+					bbb.ValidItems.Push(invitem);
+					bbb.validitemssize++;
+					
+					let aaa = Inventory(Actor.spawn(invitem.getclassname()));
+					// Now check to see if it's properly whitelisted. 
+					if(!(checkrules(invitem, aaa, true, returnvalue)))
+					{
+						bbb.ValidItemsActual.Push(invitem);
+						bbb.validitemsactualsize++;
+					}
+					aaa.destroy();
+				}
+			}
+		}
+		// Remakes the validitemsactual list. 
+		// Usually never called, but this allows
+		// the handler to update storage rules any tick, not just tick 0/1.
+		else
+		{
+			bbb.ValidItemsActual.Clear();
+			bbb.validitemsactualsize = 0;
+			for (int i = 0; i < bbb.validitemssize; i++)
+			{
+				let invitem = (class<Inventory>)(bbb.validitems[i]);
+				let aaa = Inventory(Actor.spawn(invitem.getclassname()));
+				if(!(checkrules(invitem, aaa, true, returnvalue)))
+				{
+					bbb.ValidItemsActual.Push(invitem);
+					bbb.validitemsactualsize++;
+				}
+				aaa.destroy();
+			}
+		}
+		
+		// Returns the index to be used. 
+		return returnvalue;
+	}
+
+}

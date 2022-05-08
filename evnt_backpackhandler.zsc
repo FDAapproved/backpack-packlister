@@ -1,0 +1,178 @@
+
+
+
+class BackpackHandler : EventHandler
+{	
+
+
+	override void OnRegister()
+	{
+		ReadPLINFO();
+	}
+	
+	// Where the actual check happens.
+	// This is in WorldTick() since otherwise,
+	// networkevents happen after the checks have. 
+	override void WorldTick()
+	{
+		super.WorldTick();
+	
+		// Retroactively vetts new backpacks.
+		// Merchants does this, to my knowledge. 
+		if(spawnedbackpackssize > 0)hasticked=false;
+	
+		// Wait one tick before processing.
+		// This should be plenty of time for any eventhandlers
+		// to populate the list. 
+		if(!(level.time < 1) && !haspinged)
+		{
+			service BackpackService;
+			ServiceIterator i = ServiceIterator.Find("BackpackHandlerService");
+			while((BackpackService = i.next()) && !BackpackService){};
+			if(BackpackService)
+			{
+				BackpackService.GetInt('handlerping');
+			}
+			haspinged = true;
+		}	
+		else if(!(level.time < 1) && !hasticked && gotpingback)
+		{
+
+			if(pl_debug)console.printf("[PL][Handler] Processing "..spawnedbackpackssize.." backpacks.");
+			for(int i = 0; i < spawnedbackpackssize; i++)
+			{
+				if(pl_debug)console.printf("[PL][Handler] Backpack Check Iteration "..(i+1).." of "..(spawnedbackpackssize));
+				checkhdbackpack(SpawnedBackpacks[i]);
+			}
+			
+			SpawnedBackpacks.clear();
+			spawnedbackpackssize = 0;
+			hasticked = true;
+			if(pl_debug > 3)
+			{
+				service_dumpcache();
+			}
+		}
+	}
+	
+	
+	
+	override void WorldThingSpawned(WorldEvent e)
+	{		
+		// Aborts if the thing does not exist or is owned.
+		if(!e.Thing) { return; }
+		if(e.Thing is "Inventory" && Inventory(e.Thing).Owner){ return; }
+		
+		
+		// Checks to see if the pointer we fetched inherits from HDBackpack.
+		// May be better to make this a list of classes instead? 
+		// I half doubt anything extreme inherits from HDBackpack, but you
+		// never know. 
+		if(e.Thing is "HDBackpack")
+		{
+			// adds to the backpack array. 
+			// This is done to allow processing after spawns. 
+			SpawnedBackpacks.Push(e.thing);
+			spawnedbackpackssize++;
+
+		}	
+	}
+	
+	
+	void checkhdbackpack(actor e)
+	{		
+			// If it does, fetch the itemcount and retain a casted pointer.
+			let backpackpointer = HDBackpack(e);
+			int itemcount = backpackpointer.Storage.Items.Size();
+			string nametocheck;	
+			int MaxItems;		
+			// If there is no items, abort.
+			if(!ItemCount)
+			{
+				if(pl_debug)console.printf("[PL][Handler] Container empty, returning.");
+				return;
+			}
+		
+			
+			// Return the replacements array slot once (doesn't change per caller). 
+			int cacheindex = initreplacementsarray(backpackpointer);
+			
+			// If there is items, check each one against the blacklist. 
+			for(int i=0;i<itemcount; i++)
+			{
+				if(itemcount==0)
+				{
+					if(pl_debug)console.printf("[PL][Handler] Container now empty, returning.");
+					return;
+				}
+				// Store the name once per i iteration.
+				nametocheck = backpackpointer.storage.items[i].ItemClass.getclassname();
+				nametocheck = nametocheck.makelower();
+				// Debug info.
+				if(pl_debug)console.printf("[PL][Handler] Checking instance of "..backpackpointer.getclassname().." Slot "..i..": "..nametocheck);
+				
+				// Checks against the rules.	
+				if(checkrulesfaster(backpackpointer.storage.items[i].ItemClass, cacheindex))
+				{
+					// Debug info (informs of deletion). 
+					if(pl_debug)console.printf("[PL][Handler] Destroyed instance of '"..nametocheck.."'.");
+					
+					// Actual deletion uses removeitem, since that
+					// handles accessing the bulk and storage arrays. 	
+					//backpackpointer.storage.RemoveItem(backpackpointer.storage.items[i], null, null, int.max);
+					DestroyItem(backpackpointer, i);
+					
+					if(!(itemcount == backpackpointer.Storage.Items.Size()))
+					{
+						i--; 
+						itemcount = backpackpointer.Storage.Items.Size();
+					}
+					maxitems++;
+				}
+			}
+				
+			
+					// Replacement code taken from randomize.
+					// We do this after deletion since otherwise it is
+					// nondeterministic (sometimes containers don't accept items). 
+					for(int k = 0; k < MaxItems; ++k)
+					{
+						int amt;
+						if(BackpackTypes[cacheindex].ValidItemsActualSize >= 1)
+						{
+							class<Inventory> Picked = BackpackTypes[cacheindex].ValidItemsActual[random(0, BackpackTypes[cacheindex].ValidItemsActualSize - 1)];
+							
+							switch(backpackpointer.Storage.CheckConditions(null, Picked))
+							{
+								case IType_Weapon:
+									amt = 1;
+									backpackpointer.Storage.AddAmount(Picked, amt, flags: 0);
+									break;
+								case IType_Armour:
+								case IType_Mag:
+									let mag = GetDefaultByType((class<HDMagAmmo>)(Picked));
+									amt = int(min(random(1, random(1, 20)), mag.MaxAmount, backpackpointer.MaxCapacity / (max(1.0, mag.RoundBulk) * max(1.0, mag.MagBulk) * 5)));
+									backpackpointer.Storage.AddAmount(Picked, amt, flags: 0);
+									break;
+								case IType_Pickup:
+									let pkp = GetDefaultByType((class<HDPickup>)(Picked));
+									amt = int(min(random(1, pkp.bMULTIPICKUP ? random(1, 80) : random(1, random(1, 20))), pkp.MaxAmount, backpackpointer.MaxCapacity / (max(1.0, pkp.bulk) * 5.0)));
+									if (pkp.RefId == "")
+									{
+										amt = random(-2, amt);
+									}
+									if (amt > 0)
+									{
+										backpackpointer.Storage.AddAmount(Picked, amt, flags: 0);
+									}
+									break;
+							}
+							if(pl_debug)console.printf("[PL][Handler] Replaced with: "..Picked.GetClassName().."  "..amt);
+						}
+						else
+						{
+							if(pl_debug)console.printf("[PL][Handler]'"..backpackpointer.getclassname().."' has no valid replacements.");	
+						}
+				}
+		}
+}

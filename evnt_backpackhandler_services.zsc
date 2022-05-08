@@ -1,0 +1,204 @@
+extend class BackpackHandler
+{
+   override void NetworkProcess(ConsoleEvent e)
+   {   
+     Array<string> command;
+     e.Name.Split (command, ", ");
+	 int amounttosend;
+	
+	 // Invalid commands are not acted upon. 
+     if(command.Size() < 1)
+       return;
+	
+	
+	
+	 // Reports when a potentially valid command is recieved. 
+	 if((e.name.indexof("pl_") != -1))
+	 {
+		if(pl_debug)console.printf("[PL][Handler] recieved command '"..e.name.."'.");
+	 }
+	 // Returns otherwise. 
+	 else
+	 {
+		return;
+	 }
+	 
+	 
+	 
+	 // Checks for servicepings.
+	 if((command[0] == "pl_serviceping"))
+	 {
+		gotpingback = true;
+		return;
+	 }
+	 // Handles other commands and checks the command size again.
+	 else if((command[0] == 'pl_blacklist') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+			service_blacklist(command[i]);
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.blacklist') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+			service_container_blacklist(command[1], command[i]);
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_whitelist') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+			service_whitelist(command[i]);
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.whitelist') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+			service_container_whitelist(command[1], command[i]);
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_maxbulk') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtoint(command[i]);
+			if(amounttosend > 0)service_maxbulk(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.maxbulk') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtoint(command[i]);
+			if(amounttosend > 0)service_container_maxbulk(command[1], amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_minbulk') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtoint(command[i]);
+			if(amounttosend > 0)service_minbulk(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.minbulk') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtoint(command[i]);
+			if(amounttosend > 0)service_container_minbulk(command[1], amounttosend);
+		}
+		
+		return;
+	 }
+	 else if((command[0] == 'pl_allowweapons') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_allowweapons(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.allowweapons') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_container_allowweapons(command[1], amounttosend);
+		}
+		
+		return;
+	 }
+	 else if((command[0] == 'pl_allowammos') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_allowammos(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.allowammos') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_container_allowammos(command[1], amounttosend);
+		}
+		
+		return;
+	 }
+	 else if((command[0] == 'pl_allowmags') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_allowmags(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.allowmags') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_container_allowmags(command[1], amounttosend);
+		}
+		
+		return;
+	 }
+	 else if((command[0] == 'pl_allowpickups') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_allowpickups(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.allowpickups') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_container_allowpickups(command[1], amounttosend);
+		}
+		
+		return;
+	 }
+	 else if((command[0] == 'pl_allowarmors') && command.size() >= 2)
+	 {
+		for(int i = 1; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_allowarmors(amounttosend);
+		}
+			
+		return;
+	 }
+	 else if((command[0] == 'pl_container.allowarmors') && command.size() >= 3)
+	 {
+		for(int i = 2; i<command.size(); i++)
+		{
+			amounttosend = stringtobool(command[i]);
+			if(amounttosend > -1)service_container_allowarmors(command[1], amounttosend);
+		}
+		
+		return;
+	 }
+   }
+}

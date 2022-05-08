@@ -1,0 +1,17 @@
+extend class BackpackHandler
+{
+	void service_dumpcache()
+	{
+		for(int i = 0; i < backpacktypessize; i++)
+		{
+				let bbb = backpacktypes[i];
+				console.printf(backpacktypes[i].containername);
+				console.printf("Real valid items: ");
+				for(int j = 0; j < (bbb.validitemsactualsize); j++)
+					console.printf(j..", "..bbb.validitemsactual[j].getclassname());
+				console.printf("Valid Items without rules:");
+				for(int j = 0; j < (bbb.validitemssize); j++)
+					console.printf(j..", "..bbb.validitems[j].getclassname());
+		}
+	}
+}

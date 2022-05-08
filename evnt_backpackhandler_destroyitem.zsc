@@ -1,0 +1,11 @@
+// Scorched earth remover.
+// This needs no special checks, since we're forcably yanking items out of
+// inventories. 
+extend class BackpackHandler
+{
+		void DestroyItem(HDBackpack backpackpointer, int index = -1)
+		{
+			backpackpointer.storage.Items.delete(index);
+			backpackpointer.storage.CalculateBulk();
+		}
+}

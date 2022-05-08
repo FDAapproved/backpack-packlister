@@ -1,0 +1,195 @@
+class BackpackHandlerService : Service
+{
+
+	array<string> tempPLINFO;
+	
+	// manually append "container." to these in the check.
+	static const string commands[] =
+	{
+		"blacklist",
+		"whitelist",
+		"maxbulk",
+		"minbulk",
+		"allowweapons",
+		"allowpickups",
+		"allowammos",
+		"allowarmors",
+		"allowmags"
+	};
+	
+	BackpackHandler PLH;
+	bool triedhandler;
+  
+  // Main switch for function calls. 
+  Array<string> Arguements;
+  
+  void gethandler()
+  {
+	PLH = BackpackHandler(EventHandler.Find("BackpackHandler"));
+	if(PLH)getlumpinfo();
+	triedhandler = true;
+  }
+
+  void getlumpinfo()
+  {
+		// Splits at semicolons.
+		for(int i = 0; i < PLH.lumplinessize; i++)
+		{
+			PLH.PLINFOlump[i].Split(tempPLINFO, ";");
+		}
+  }
+  
+  override int GetInt(string function_and_args)
+  {	
+		
+		int i,j,k;
+		int code = 0;
+		
+		if((function_and_args == 'handlerping'))
+		{
+			gethandler();
+		}
+		else
+		{
+			// Splits at the semicolon.
+			function_and_args.split(tempPLINFO, ";");
+			if(pl_debug)console.printf("[Service] Reading '"..function_and_args.."'.");
+		}
+		
+		int datasize = tempPLINFO.size();
+		bool adding  = false;
+		int lastsize = 0;
+		int arguementssize = 0;
+		string sendstring = "";
+		for(k=0; k < datasize; k++)
+		{
+			// In the event that a string is empty (we ignore empties already). 
+			if(tempPLINFO[k] != "")
+			{
+				sendstring = "pl_";
+				
+				// Does per-new-cycle cleanup. 
+				if(!adding)
+				{
+					Arguements.clear();
+					arguementssize = 0;
+					
+					// Seperates the arguements portion and the parameters portion. 
+					tempPLINFO[k].split(Arguements, ":");
+
+					// Returns an error code if the size is too small. 
+					if(Arguements.size() < 2)
+					{
+						code = min(code, -1);
+					}
+					
+					
+					// Checks to see if more than one param was passed.
+					// This works by deleting the first param,
+					// then removing the function from the original string,
+					// then adding the resulting substring to the arguements array.
+					else if(arguements[1].indexof(",") != -1)
+					{
+						tempPLINFO[k].remove(0, tempPLINFO[k].indexof(":") + 1);
+						arguements.delete(1);
+						tempPLINFO[k].split(Arguements, ",");
+
+					}
+					
+					arguementssize = Arguements.size();
+				}
+				else
+				{
+					tempPLINFO[k].split(Arguements, ",");
+					arguementssize = Arguements.size();
+					adding = false;
+				}
+				
+				/*
+					// Old semicolon code. Removed since it was really wonky. 
+					// Removes semicolons from the ends of lines. 
+					if(Arguements.size() > 1 && arguements[arguementssize-1].indexof(";") != -1)
+					{
+						arguements[arguementssize-1].remove(arguements[arguementssize-1].indexof(";"), 1);
+					}
+				*/
+
+				if((Arguements.size() > 1 && arguements[arguementssize-1].indexof(",") != -1) && ((k + 1) < datasize))
+				{
+					adding   = true;
+					lastsize = arguementssize;
+				}
+				else
+				{
+					lastsize = 0;
+				}
+
+				if(!adding)
+				{
+					// Vets the contents of each arguement string.
+					for(i=0; i<arguementssize; i++)
+					{
+						arguements[i] = Arguements[i].makelower();
+						
+						// Remove newline and return characters
+						Arguements[i].Replace("\r", "");
+						Arguements[i].Replace("\n", "");
+						Arguements[i].Replace("\f", "");
+						Arguements[i].replace(" ", "");
+						Arguements[i].replace("	", "");
+					}
+					
+					int minsize = iscommand(Arguements[0]);
+					if(minsize != -1)
+					{
+						if(!((arguementssize-1)%(minsize-1)))
+						{
+							for(j=0; j<minsize;j++)
+								if(!(j==0))
+									sendstring = sendstring..", "..arguements[j];
+								else
+									sendstring = sendstring..arguements[j];
+
+							for(j=minsize; j<arguementssize;j++)
+								sendstring = sendstring..", "..arguements[j];
+							
+							if(pl_debug)console.printf("Service calling '"..sendstring.."'.");
+							BackpackHandler.SendNetworkEvent(sendstring);
+						}
+						else
+						{
+							console.printf("[ERROR] insufficient arguements to call '"..arguements[0].."'.");
+							code = min(code, -2);
+						}
+					}
+				}
+			}
+		}
+
+
+		// Clears the array (we don't need it anymore). 
+		tempPLINFO.clear();
+		// Tells the handler we've pinged back.
+		if((function_and_args == 'handlerping'))
+		{
+			if(pl_debug)console.printf("[Service] Lump reading finished; informing handler.");
+			BackpackHandler.SendNetworkEvent("pl_serviceping");
+		}
+		return code;
+  }
+  
+  int iscommand(string candidate)
+  {
+	for(int i; i < commands.size(); i++)
+	{
+		if(candidate == commands[i])
+			return 2;
+		else if(candidate == ("container."..commands[i]))
+			return 3;
+	}
+
+	console.printf("[Service][Error] '"..candidate.."' is not a valid command.");
+	return -1;
+  }
+ 
+}
