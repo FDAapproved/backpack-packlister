@@ -29,7 +29,7 @@ Packlister command calls are written in the following format:
 - When sending multiple commands via a single string, ; is used to denote the end of one command call and the start of another (see above).
 
 # Implementation
-Packlister can be implemented staticallu, dynamically or via a mix of the two. 
+Packlister can be implemented statically, dynamically or via a mix of the two. 
 
 ## Static Implementation
 Packlister can be utilized by including a PLINFO lump in your mod's root directory. This method is called 'static' since the contents of PLINFO are always loaded, regardless of your mod's settings.
