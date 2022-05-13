@@ -89,7 +89,7 @@ class BackpackHandler : EventHandler
 			// If there is no items, abort.
 			if(!ItemCount)
 			{
-				if(pl_debug)console.printf("[PL][Handler] Container empty, returning.");
+				if(pl_debug > 1)console.printf("[PL][Handler] Container empty, returning.");
 				return;
 			}
 		
@@ -102,32 +102,35 @@ class BackpackHandler : EventHandler
 			{
 				if(itemcount==0)
 				{
-					if(pl_debug)console.printf("[PL][Handler] Container now empty, returning.");
-					return;
+					if(pl_debug > 1)console.printf("[PL][Handler] Container now empty, returning.");
+					i = itemcount + 1;
 				}
-				// Store the name once per i iteration.
-				nametocheck = backpackpointer.storage.items[i].ItemClass.getclassname();
-				nametocheck = nametocheck.makelower();
-				// Debug info.
-				if(pl_debug)console.printf("[PL][Handler] Checking instance of "..backpackpointer.getclassname().." Slot "..i..": "..nametocheck);
-				
-				// Checks against the rules.	
-				if(checkrulesfaster(backpackpointer.storage.items[i].ItemClass, cacheindex))
+				else
 				{
-					// Debug info (informs of deletion). 
-					if(pl_debug)console.printf("[PL][Handler] Destroyed instance of '"..nametocheck.."'.");
+					// Store the name once per i iteration.
+					nametocheck = backpackpointer.storage.items[i].ItemClass.getclassname();
+					nametocheck = nametocheck.makelower();
+					// Debug info.
+					if(pl_debug > 1)console.printf("[PL][Handler] Checking instance of "..backpackpointer.getclassname().." Slot "..i..": "..nametocheck);
 					
-					// Actual deletion uses removeitem, since that
-					// handles accessing the bulk and storage arrays. 	
-					//backpackpointer.storage.RemoveItem(backpackpointer.storage.items[i], null, null, int.max);
-					DestroyItem(backpackpointer, i);
-					
-					if(!(itemcount == backpackpointer.Storage.Items.Size()))
+					// Checks against the rules.	
+					if(checkrulesfaster(backpackpointer.storage.items[i].ItemClass, cacheindex))
 					{
-						i--; 
-						itemcount = backpackpointer.Storage.Items.Size();
+						// Debug info (informs of deletion). 
+						if(pl_debug > 1)console.printf("[PL][Handler] Destroyed instance of '"..nametocheck.."'.");
+						
+						// Actual deletion uses removeitem, since that
+						// handles accessing the bulk and storage arrays. 	
+						//backpackpointer.storage.RemoveItem(backpackpointer.storage.items[i], null, null, int.max);
+						DestroyItem(backpackpointer, i);
+						
+						if(!(itemcount == backpackpointer.Storage.Items.Size()))
+						{
+							i--; 
+							itemcount = backpackpointer.Storage.Items.Size();
+						}
+						maxitems++;
 					}
-					maxitems++;
 				}
 			}
 				
@@ -167,11 +170,11 @@ class BackpackHandler : EventHandler
 									}
 									break;
 							}
-							if(pl_debug)console.printf("[PL][Handler] Replaced with: "..Picked.GetClassName().."  "..amt);
+							if(pl_debug > 1)console.printf("[PL][Handler] Replaced with: "..Picked.GetClassName().."  "..amt);
 						}
 						else
 						{
-							if(pl_debug)console.printf("[PL][Handler]'"..backpackpointer.getclassname().."' has no valid replacements.");	
+							if(pl_debug > 1)console.printf("[PL][Handler]'"..backpackpointer.getclassname().."' has no valid replacements.");	
 						}
 				}
 		}

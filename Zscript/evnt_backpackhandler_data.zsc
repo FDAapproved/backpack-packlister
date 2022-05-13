@@ -1,3 +1,12 @@
+// Generalized list item struct. 
+class PLListItem play
+{
+	string itemname;
+	bool   whitelisted;
+	bool   blacklisted;
+}
+
+
 // Dataclass that holds set rules for containers,
 // also doubles as a validitems array that replacements pull from.
 // This class ensures repetetive operations for maps with many, many
