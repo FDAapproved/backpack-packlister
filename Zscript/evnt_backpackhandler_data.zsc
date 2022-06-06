@@ -1,9 +1,14 @@
 // Generalized list item struct. 
 class PLListItem play
 {
-	string itemname;
-	bool   whitelisted;
-	bool   blacklisted;
+	// Only one of these two is set.
+	string    itemname;    // ID by string
+	Inventory itempointer; // ID by ptr (for validitemsactual). 
+	
+	int       chance;
+	int       minamt;     // default: -2. 
+	int       maxamt;     // default: depends on itemtype.
+	int 	  peramt; 	  // default 1.
 }
 
 
@@ -31,16 +36,20 @@ class BackpackCacher play
 	
 	// Items to force-allow per container.
 	Array<string> WhiteList;
+	Array<PLListItem> WhiteListDetailed;
 	int whitelistsize;
+	
+
+	
+	
 	
 	// Maximum bulk allowed per item (-1 = none)
 	int bulkmax;
 	bool hasmaxbulk;
-
-
 	// Minimum bulk allowed per item (-1 = none)
 	int bulkmin;
 	bool hasminbulk;
+	
 	
 	
 	// All false by default.
@@ -205,7 +214,7 @@ extend class BackpackHandler
 					bbb.validitemssize++;
 					
 					let aaa = Inventory(Actor.spawn(invitem.getclassname()));
-					// Now check to see if it's properly whitelisted. 
+					// Now check to see if it's properly whitelisted.
 					if(!(checkrules(invitem, aaa, true, returnvalue)))
 					{
 						bbb.ValidItemsActual.Push(invitem);
