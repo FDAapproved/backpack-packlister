@@ -151,7 +151,6 @@ class BackpackHandler : EventHandler
 									amt = 1;
 									backpackpointer.Storage.AddAmount(Picked, amt, flags: 0);
 									break;
-								case IType_Armour:
 								case IType_Mag:
 									let mag = GetDefaultByType((class<HDMagAmmo>)(Picked));
 									amt = int(min(random(1, random(1, 20)), mag.MaxAmount, backpackpointer.MaxCapacity / (max(1.0, mag.RoundBulk) * max(1.0, mag.MagBulk) * 5)));
