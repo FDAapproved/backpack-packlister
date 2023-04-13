@@ -1,3 +1,6 @@
+# Notice:
+ As of merge https://codeberg.org/mc776/HideousDestructor/commit/078fbb2400f52cda168797705ec466265c746464 (4/12/2023), packlister is more or less redundant. The main feature it has over backpack lootpools in HD is the ability to whitelist, add rules by container classname, etc. Assuming I'm able to procure freetime, I intend to try to merge these features as a push to HD main, fully making packlister obsolete. 
+
 # Backpack Packlister
  A backpack lootpool API for the GZDoom gameplay mod 'Hideous Destructor'.
 
